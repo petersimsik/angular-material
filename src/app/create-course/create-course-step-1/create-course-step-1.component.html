@@ -30,5 +30,49 @@
     <mat-radio-button value="premium">Premium</mat-radio-button>
   </mat-radio-group>
 
-  {{ form.get["courseType"].value }}
+  <mat-form-field appearance="outline">
+    <mat-select formControlName="category" placeholder="Select category">
+      <mat-option>None</mat-option>
+
+      <mat-optgroup label="Newbies">
+        <mat-option value="beginners">Berinners</mat-option>
+        <mat-option value="lowskilled">Low skilled</mat-option>
+      </mat-optgroup>
+
+      <mat-option value="intermediate">Intermediate</mat-option>
+      <mat-option value="advanced">Advanced</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <input
+      matInput
+      formControlName="releasedAt"
+      placeholder="Release date"
+      [matDatepicker]="releasedAtPicker"
+    />
+    <mat-datepicker-toggle matSuffix [for]="releasedAtPicker">
+    </mat-datepicker-toggle>
+
+    <mat-datepicker #releasedAtPicker [dateClass]="dateClass"> </mat-datepicker>
+  </mat-form-field>
+
+  <mat-checkbox
+    color="primary"
+    formControlName="downloadsAllowed"
+    [indeterminate]="true"
+  >
+    Downloads allowed?
+  </mat-checkbox>
+
+  <mat-form-field>
+    <textarea
+      appearence="inline"
+      matInput
+      formControlName="longDescription"
+      placeholder="Long description"
+    ></textarea>
+  </mat-form-field>
+
+  {{ this.form.get("downloadsAllowed").value }}
 </div>
