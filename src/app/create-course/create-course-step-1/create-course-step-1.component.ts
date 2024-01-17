@@ -10,6 +10,8 @@ import { MatCalendarCellClassFunction } from '@angular/material/datepicker';
 })
 export class CreateCourseStep1Component {
 
+  LONG_TEXT = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque dignissim semper est nec gravida. Phasellus bibendum tempor lacus vitae aliquet. Donec sit amet quam commodo elit vehicula dapibus. Proin sit amet arcu consequat, placerat dui lacinia, pharetra mauris. Curabitur pulvinar elit ac faucibus sollicitudin. Ut imperdiet diam enim, vel suscipit augue accumsan id. Donec eget urna nec felis sollicitudin feugiat ut sed arcu. Phasellus a pharetra leo. ';
+
   form = this.fb.group({
     title: ['', [
       Validators.required,
@@ -20,7 +22,7 @@ export class CreateCourseStep1Component {
     category: ['BEGINNER', Validators.required],
     courseType: ['premium', Validators.required],
     downloadsAllowed: [false, Validators.requiredTrue],
-    longDescription: [LONG_TEXT, [Validators.required, Validators.minLength(3)]]
+    longDescription: [this.LONG_TEXT, [Validators.required, Validators.minLength(3)]]
   });
 
   constructor(private fb: UntypedFormBuilder) {
