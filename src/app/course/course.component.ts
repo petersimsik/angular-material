@@ -7,6 +7,8 @@ import {Course} from "../model/course";
 import {CoursesService} from "../services/courses.service";
 import {debounceTime, distinctUntilChanged, startWith, tap, delay} from 'rxjs/operators';
 import {merge, fromEvent} from "rxjs";
+import { Lesson } from '../model/lesson';
+import { SelectionModel } from '@angular/cdk/collections';
 
 
 @Component({
@@ -18,87 +20,20 @@ export class CourseComponent implements OnInit, AfterViewInit {
 
     course:Course;
 
-    lessons = [
-       {
-        id: 120,
-        'description': 'Introduction to Angular Material',
-        'duration': '4:17',
-        'seqNo': 1,
-        courseId: 11
-      },
-      {
-        id: 121,
-        'description': 'Navigation and Containers',
-        'duration': '6:37',
-        'seqNo': 2,
-        courseId: 11
-      },
-      {
-        id: 122,
-        'description': 'Data Tables',
-        'duration': '8:03',
-        'seqNo': 3,
-        courseId: 11
-      },
-      {
-        id: 123,
-        'description': 'Dialogs and Overlays',
-        'duration': '11:46',
-        'seqNo': 4,
-        courseId: 11
-      },
-      {
-        id: 124,
-        'description': 'Commonly used Form Controls',
-        'duration': '7:17',
-        'seqNo': 5,
-        courseId: 11
-      },
-      {
-        id: 125,
-        'description': 'Drag and Drop',
-        'duration': '8:16',
-        'seqNo': 6,
-        courseId: 11
-      },
-      {
-        id: 126,
-        'description': 'Responsive Design',
-        'duration': '7:28',
-        'seqNo': 7,
-        courseId: 11
-      },
-      {
-        id: 127,
-        'description': 'Tree Component',
-        'duration': '11:09',
-        'seqNo': 8,
-        courseId: 11
-      },
-      {
-        id: 128,
-        'description': 'Virtual Scrolling',
-        'duration': '3:44',
-        'seqNo': 9,
-        courseId: 11
-      },
-      {
-        id: 129,
-        'description': 'Custom Themes',
-        'duration': '8:55',
-        'seqNo': 10,
-        courseId: 11
-      },
-      {
-        id: 130,
-        'description': 'Changing Theme at Runtime',
-        'duration': '12:37',
-        'seqNo': 11,
-        courseId: 11
-      }
-    ];
+    lessons : Lesson[] = [];
+    dataLoading : boolean = false;
+    
+    @ViewChild(MatPaginator)
+    paginator : MatPaginator;
 
-    displayedColumns = ['seqNo', 'description', 'duration'];
+    @ViewChild(MatSort)
+    sort : MatSort;
+
+    expandedLesson : Lesson = null;
+
+    displayedColumns = ['select', 'seqNo', 'description', 'duration'];
+
+    selection = new SelectionModel(true, []); //multiple rows, initial selection
 
     constructor(private route: ActivatedRoute,
                 private coursesService: CoursesService) {
@@ -108,13 +43,66 @@ export class CourseComponent implements OnInit, AfterViewInit {
     ngOnInit() {
 
         this.course = this.route.snapshot.data["course"];
+        this.loadLessonsPage();
 
+    }
 
+    toggleLessonSelection(lesson : Lesson) {
+      this.selection.toggle(lesson);
+      console.log(this.selection.selected);
+    }
+
+    toggleAllLessonsSelection() {
+      this.lessons.forEach(lesson => this.selection.toggle(lesson));
+    }
+
+    isAllSelected() : boolean {
+      return this.selection.selected?.length == this.lessons?.length;
+    }
+
+    expandLesson(lesson : Lesson) {
+      if (this.expandedLesson === lesson)
+        this.expandedLesson = null;
+      else
+        this.expandedLesson = lesson;
+    }
+
+    loadLessonsPage() {
+      this.dataLoading = true;
+      this.coursesService.findLessons(
+                            this.course.id, 
+                            this.sort?.direction ?? 'asc', 
+                            this.paginator?.pageIndex ?? 0, 
+                            this.paginator?.pageSize ?? 3,
+                            this.sort?.active ?? 'seqNo').subscribe({
+        next : (data) => {
+          console.log('have data');
+          this.dataLoading = false;
+          this.lessons = data;
+        },
+        error: (error) => {
+          this.dataLoading = false;
+          console.log('Ups error');
+        }
+      })
     }
 
     ngAfterViewInit() {
 
+      this.sort.sortChange.subscribe({
+        next: () => {
+          this.paginator.pageIndex = 0;
+        }
+      });
 
+      merge(this.paginator.page, this.sort.sortChange).subscribe({
+        next: (page) => {
+          this.loadLessonsPage();
+        },
+        error : (error) => {
+          console.log('paginator error');
+        }
+      });
     }
 
 }
